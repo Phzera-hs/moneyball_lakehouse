@@ -1,0 +1,17 @@
+moneyball_lakehouse:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      method: oauth
+      host: "{{ env_var('DBX_HOST', 'dbc-6b8c595c-19d2.cloud.databricks.com') }}"
+      http_path: "/sql/1.0/warehouses/d56677966730e185"
+      catalog: dev
+      schema: silver
+    prod:
+      type: databricks
+      method: oauth
+      host: "{{ env_var('DBX_HOST', 'dbc-6b8c595c-19d2.cloud.databricks.com') }}"
+      http_path: "/sql/1.0/warehouses/d56677966730e185"
+      catalog: prod
+      schema: silver

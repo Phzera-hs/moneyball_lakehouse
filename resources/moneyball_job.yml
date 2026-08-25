@@ -1,0 +1,58 @@
+resources:
+  jobs:
+    moneyball_pipeline:
+      name: "[${bundle.target}] Moneyball Pipeline - Futebol"
+
+      schedule:
+        quartz_cron_expression: "0 0 7 * * ?"
+        timezone_id: "America/Sao_Paulo"
+
+      # Definição de um ambiente serverless para as tarefas do job
+      environments:
+        - environment_key: serverless_env
+          spec:
+            client: "1"
+
+      tasks:
+        # Tarefa 1: Ingestão via API
+        - task_key: ingestion_infos_task
+          environment_key: serverless_env
+          spark_python_task:
+            python_file: ../src/ingestion/api_client.py
+            parameters:
+              - "--catalog"
+              - "${var.catalog}"
+
+        # Tarefa 2: Ingestão via scraper
+        - task_key: ingestion_fin_task
+          environment_key: serverless_env
+          spark_python_task:
+            python_file: ../src/ingestion/scrapper.py
+            parameters:
+              - "--catalog"
+              - "${var.catalog}"
+
+        # Tarefa 3: Transformação Silver
+        - task_key: silver_transformation_task
+          environment_key: serverless_env
+          depends_on: 
+            - task_key: ingestion_infos_task
+            - task_key: ingestion_fin_task
+          spark_python_task:
+            python_file: ../src/silver/transform_silver.py
+            parameters:
+              - "--catalog"
+              - "${var.catalog}"
+
+        # Tarefa 4: dbt Modeling
+        - task_key: dbt_modeling_task
+          environment_key: serverless_env
+          depends_on:
+            - task_key: silver_transformation_task
+          dbt_task:
+            project_directory: ../src/dbt_project
+            commands:
+              - "dbt deps"
+              - "dbt test"
+              - "dbt run"
+            warehouse_id: "d56677966730e185"
