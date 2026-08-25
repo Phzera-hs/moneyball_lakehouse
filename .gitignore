@@ -9,6 +9,7 @@ __pycache__/
 *.so
 .venv/
 env/
+.env
 venv/
 ENV/
 build/

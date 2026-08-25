@@ -4,6 +4,11 @@ bundle:
   name: moneyball_lakehouse
   uuid: 3f67527a-0c89-44ab-a135-44a4cce28361
 
+sync:
+  exclude:
+    - .env
+    - .env.*
+
 include:
   - resources/*.yml
 
